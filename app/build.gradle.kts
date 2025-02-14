@@ -52,5 +52,9 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation (libs.lottie)
     implementation (libs.play.services.auth)
+    implementation ("com.airbnb.android:lottie:6.0.0")
+    implementation ("com.airbnb.android:lottie:5.0.3' // or the latest version")
+    }
 
-}
+
+

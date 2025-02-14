@@ -33,15 +33,15 @@ class SignUpActivity : AppCompatActivity() {
             if (email.isNotEmpty() && password.isNotEmpty()) {
                 authController.register(email, password) { success, error ->
                     if (success) {
-                        Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Sign up successful", Toast.LENGTH_SHORT).show()
                         startActivity(Intent(this, SignInActivity::class.java))
                     } else {
-                        Toast.makeText(this, "Registration failed: $error", Toast.LENGTH_SHORT)
+                        Toast.makeText(this, "Sign up failed: $error", Toast.LENGTH_SHORT)
                             .show()
                     }
                 }
             } else {
-                Toast.makeText(this, "Fields cannot be empty", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Fields should not be empty", Toast.LENGTH_SHORT).show()
             }
         }
 

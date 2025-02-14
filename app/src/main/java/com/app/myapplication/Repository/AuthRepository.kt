@@ -1,6 +1,7 @@
 package com.app.myapplication.Repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 
 class AuthRepository {
@@ -27,6 +28,20 @@ class AuthRepository {
                 }
             }
     }
+
+    fun authenticateWithFirebase(googleIdToken: String, callback: (Boolean, String?) -> Unit) {
+        val credential = GoogleAuthProvider.getCredential(googleIdToken, null)
+
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    callback(true, firebaseAuth.currentUser?.displayName)
+                } else {
+                    callback(false, task.exception?.message)
+                }
+            }
+    }
+
 
 
 

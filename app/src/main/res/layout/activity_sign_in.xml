@@ -66,10 +66,4 @@
         android:layout_height="wrap_content"
         android:text="Don't have an account? Sign Up"
         android:textColor="@android:color/holo_blue_dark" />
-
-
-
-
-
-
 </LinearLayout>

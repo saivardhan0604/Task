@@ -1,7 +1,10 @@
 package com.app.myapplication
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -17,7 +20,7 @@ class MainActivity : AppCompatActivity() {
 
     private val colors = arrayOf(Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.MAGENTA)
     private var colorIndex = 0
-    private lateinit var binding:ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,16 +28,11 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
-        // Get the root view
-        val rootView = window.decorView
-
-        // Start coroutine to change color every 3 seconds
-        GlobalScope.launch(Dispatchers.Main) {
-            while (true) {
-                delay(3000) // Wait for 3 seconds
-                rootView.setBackgroundColor(colors[colorIndex]) // Change color
-                colorIndex = (colorIndex + 1) % colors.size // Cycle through colors
-            }
-        }
+        // Delay to move to MainActivity
+        Handler(Looper.getMainLooper()).postDelayed({
+            val intent = Intent(this, MainActivity2::class.java)
+            startActivity(intent)
+            finish() // Finish SplashActivity so user cannot go back
+        }, 3000) //
     }
 }

@@ -38,23 +38,31 @@ private  lateinit var binding:ActivitySignInBinding
         authController = AuthController(AuthRepository())
 
 
-        // Configure Google Sign-In
+
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("AIzaSyB0oLVrNfmrlKNNjqRfXAFhbQwyggWm_GA") // Replace with Firebase OAuth Web Client ID
             .requestEmail()
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
+
         googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 result.data?.let { intent ->
                     try {
                         val credential = Identity.getSignInClient(this)
-                            .getSignInCredentialFromIntent(intent) // ✅ Retrieve sign-in credential
+                            .getSignInCredentialFromIntent(intent)
 
                         val googleIdToken = credential.googleIdToken
                         if (!googleIdToken.isNullOrEmpty()) {
-                            authenticateWithFirebase(googleIdToken) // ✅ Authenticate with Firebase
+                            authController.authenticateWithFirebase(googleIdToken) { success, message ->
+                                if (success) {
+                                    startActivity(Intent(this, MainActivity::class.java))
+                                    Toast.makeText(this, "Welcome $message", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(this, "Sign-in failed: $message", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         } else {
                             Toast.makeText(this, "Sign-in failed: No ID token", Toast.LENGTH_SHORT).show()
                         }
@@ -68,6 +76,7 @@ private  lateinit var binding:ActivitySignInBinding
             }
         }
 
+
         binding.btnGoogleSignIn.setOnClickListener {
             signInWithGoogle()
         }
@@ -76,7 +85,6 @@ private  lateinit var binding:ActivitySignInBinding
             startActivity(Intent(this, OtpActivity::class.java))
         }
 
-        //SignIn using email and password
         binding.btnSignIn.setOnClickListener {
             val email = binding.etEmailSignIn.text.toString()
             val password = binding.etPasswordSignIn.text.toString()
@@ -87,11 +95,11 @@ private  lateinit var binding:ActivitySignInBinding
                         Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
                         startActivity(Intent(this, MainActivity::class.java))
                     } else {
-                        Toast.makeText(this, "Login failed: $error", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Failed: $error", Toast.LENGTH_SHORT).show()
                     }
                 }
             } else {
-                Toast.makeText(this, "Fields cannot be empty", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Fields should not be empty", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -107,41 +115,24 @@ private  lateinit var binding:ActivitySignInBinding
             .setGoogleIdTokenRequestOptions(
                 BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                     .setSupported(true)
-                    .setServerClientId(getString(R.string.default_web_client_id)) // ✅ Use the correct client ID
-                    .setFilterByAuthorizedAccounts(false) // ✅ Allow all accounts
+                    .setServerClientId(getString(R.string.default_web_client_id))
+                    .setFilterByAuthorizedAccounts(false)
                     .build()
             )
-            .setAutoSelectEnabled(true) // ✅ Auto-select the last signed-in account if available
+            .setAutoSelectEnabled(true)
             .build()
 
         signInClient.beginSignIn(signInRequest)
             .addOnSuccessListener { result ->
                 val intentSenderRequest = IntentSenderRequest.Builder(result.pendingIntent).build()
-                googleSignInLauncher.launch(intentSenderRequest) // ✅ Correct way to launch Google Sign-In
+                googleSignInLauncher.launch(intentSenderRequest)
             }
             .addOnFailureListener { e ->
-                Log.e("GoogleSignIn", "Sign-in failed: ${e.message}")
-                Toast.makeText(this, "Google Sign-In error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Sign-In error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
     }
 
-    private fun authenticateWithFirebase(googleIdToken: String) {
-        val credential = GoogleAuthProvider.getCredential(googleIdToken, null)
 
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    startActivity(Intent(this, MainActivity::class.java))
-
-                    Toast.makeText(this, "Welcome ${user?.displayName}", Toast.LENGTH_SHORT).show()
-                    Log.d("FirebaseAuth", "Sign-in successful: ${user?.uid}")
-                } else {
-                    Toast.makeText(this, "Firebase Authentication failed", Toast.LENGTH_SHORT).show()
-                    Log.e("FirebaseAuth", "Sign-in failed: ${task.exception?.message}")
-                }
-            }
-    }
 
 
 
